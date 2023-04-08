@@ -35,18 +35,45 @@ Please refer to the [Makefile](./Makefile) for more compilation commands.
 ckb-sdk-rust provides a convenient client that enables you to easily interact with CKB nodes.
 
 ```rust
-use ckb_rpc::rpc::CkbRpcClient;
+use ckb_sdk::rpc::CkbRpcClient;
 
 let mut ckb_client = CkbRpcClient::new("https://testnet.ckb.dev");
 let block = ckb_client.get_block_by_number(0.into()).unwrap();
-println!("> block: {}", serde_json::to_string_pretty(&block).unwrap());
+println!("block: {}", serde_json::to_string_pretty(&block).unwrap());
 ```
 
 For more details about CKB RPC APIs, please refer to the [CKB RPC doc](https://github.com/nervosnetwork/ckb/blob/master/rpc/README.md).
 
 ### Build transaction by manual
 
+```rust
+
+```
+
 ### Sign and send transaction
+
+```rust
+
+```
+
+### Generate a new address
+
+```rust
+use ckb_sdk::types::{Address, AddressPayload, NetworkType};
+use rand::Rng;
+
+let mut rng = rand::thread_rng();
+let privkey_bytes: [u8; 32] = rng.gen();
+let secp_secret_key = secp256k1::SecretKey::from_slice(&privkey_bytes).unwrap();
+let pubkey =
+    secp256k1::PublicKey::from_secret_key(&ckb_crypto::secp::SECP256K1, &secp_secret_key);
+let payload = AddressPayload::from_pubkey(&pubkey);
+let address = Address::new(NetworkType::Mainnet, payload, true);
+println!("address: {}", address.to_string());
+```
+
+For more details please about CKB address refer to [CKB rfc 0021](https://github.com/nervosnetwork/rfcs/blob/master/rfcs/0021-ckb-address-format/0021-ckb-address-format.md).
+
 
 ## Examples
 
