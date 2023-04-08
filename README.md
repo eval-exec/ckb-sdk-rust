@@ -14,6 +14,19 @@ ckb-sdk = "2.5.0"
 
 ## Build
 
+Build:
+
+```bash
+cargo build
+```
+
+Run unit tests:
+
+```
+make test
+```
+
+Please refer to the [Makefile](./Makefile) for more compilation commands.
 
 ## Quick start
 
