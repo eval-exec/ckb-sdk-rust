@@ -58,6 +58,8 @@ For more details about CKB RPC APIs, please refer to the [CKB RPC doc](https://g
 
 ### Generate a new address
 
+In CKB, a private key can be used to generate a public key, which is then hashed using the Blake2b hashing algorithm to produce a CKB address. The public key is derived from the private key using the secp256k1 elliptic curve cryptography algorithm. This process results in a unique CKB address that can be used to receive or send CKB tokens. It is important to keep the private key secure, as anyone with access to it can potentially access the associated CKB funds. 
+
 ```rust
 use ckb_sdk::types::{Address, AddressPayload, NetworkType};
 use rand::Rng;
@@ -70,6 +72,21 @@ let pubkey =
 let payload = AddressPayload::from_pubkey(&pubkey);
 let address = Address::new(NetworkType::Mainnet, payload, true);
 println!("address: {}", address.to_string());
+```
+
+### Parse address
+
+In the world of CKB, a lock script can be represented as an address. It is possible to parse an address from an encoded string and then obtain its network and script.
+
+```rust
+use ckb_sdk::types::Address;
+use ckb_types::packed::Script;
+use std::str::FromStr;
+
+let addr_str = "ckb1qzda0cr08m85hc8jlnfp3zer7xulejywt49kt2rr0vthywaa50xwsqgvf0k9sc40s3azmpfvhyuudhahpsj72tsr8cx3d";
+let addr = Address::from_str(addr_str).unwrap();
+let _network = addr.network();
+let _script: Script = addr.payload().into();
 ```
 
 For more details please about CKB address refer to [CKB rfc 0021](https://github.com/nervosnetwork/rfcs/blob/master/rfcs/0021-ckb-address-format/0021-ckb-address-format.md).
