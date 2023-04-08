@@ -32,6 +32,16 @@ Please refer to the [Makefile](./Makefile) for more compilation commands.
 
 ### Setup
 
+ckb-sdk-rust provides a convenient client that enables you to easily interact with CKB nodes.
+
+```rust
+use ckb_rpc::rpc::CkbRpcClient;
+
+let mut ckb_client = CkbRpcClient::new("https://testnet.ckb.dev");
+let block = ckb_client.get_block_by_number(0.into()).unwrap();
+println!("> block: {}", serde_json::to_string_pretty(&block).unwrap());
+```
+
 For more details about CKB RPC APIs, please refer to the [CKB RPC doc](https://github.com/nervosnetwork/ckb/blob/master/rpc/README.md).
 
 ### Build transaction by manual
