@@ -53,14 +53,91 @@ For more details about CKB RPC APIs, please refer to the [CKB RPC doc](https://g
 
 ### Build transaction by manual
 
-```rust
+The following code example demonstrates how to construct a transfer transaction on CKB. You can use it to transfer a specified amount of CKB from one address to another. 
 
-```
-
-### Sign and send transaction
+**NOTE**: The address and key are for demo purposes only and should not be used in a production environment.
 
 ```rust
+use ckb_sdk::{
+    constants::SIGHASH_TYPE_HASH,
+    rpc::CkbRpcClient,
+    traits::{
+        DefaultCellCollector, DefaultCellDepResolver, DefaultHeaderDepResolver,
+        DefaultTransactionDependencyProvider, SecpCkbRawKeySigner,
+    },
+    tx_builder::{transfer::CapacityTransferBuilder, CapacityBalancer, TxBuilder},
+    unlock::{ScriptUnlocker, SecpSighashUnlocker},
+    Address, HumanCapacity, ScriptId,
+};
+use ckb_types::{
+    bytes::Bytes,
+    core::BlockView,
+    h256,
+    packed::{CellOutput, Script, WitnessArgs},
+    prelude::*,
+};
+use std::{collections::HashMap, str::FromStr};
 
+// Prepare the necessary data for a CKB transaction:
+//   * set the RPC endpoint for the testnet
+//   * define the sender's address and secret key
+//   * define the recipient's address
+//   * specify the capacity to transfer
+let ckb_rpc = "https://testnet.ckb.dev:8114";
+let sender = Address::from_str("ckt1qzda0cr08m85hc8jlnfp3zer7xulejywt49kt2rr0vthywaa50xwsqf7v2xsyj0p8szesqrwqapvvygpc8hzg9sku954v").unwrap();
+let sender_key = secp256k1::SecretKey::from_slice(
+    h256!("0xef4dfe655b3df20838bdd16e20afc70dfc1b9c3e87c54c276820315a570e6555").as_bytes(),
+)
+.unwrap();
+let receiver = Address::from_str("ckt1qzda0cr08m85hc8jlnfp3zer7xulejywt49kt2rr0vthywaa50xwsqvglkprurm00l7hrs3rfqmmzyy3ll7djdsujdm6z").unwrap();
+let capacity = HumanCapacity::from_str("100.0").unwrap();
+
+ // Build ScriptUnlocker
+let signer = SecpCkbRawKeySigner::new_with_secret_keys(vec![sender_key]);
+let sighash_unlocker = SecpSighashUnlocker::from(Box::new(signer) as Box<_>);
+let sighash_script_id = ScriptId::new_type(SIGHASH_TYPE_HASH.clone());
+let mut unlockers = HashMap::default();
+unlockers.insert(
+    sighash_script_id,
+    Box::new(sighash_unlocker) as Box<dyn ScriptUnlocker>,
+);
+
+// Build CapacityBalancer
+let placeholder_witness = WitnessArgs::new_builder()
+    .lock(Some(Bytes::from(vec![0u8; 65])).pack())
+    .build();
+let balancer = CapacityBalancer::new_simple(sender.payload().into(), placeholder_witness, 1000);
+
+// Build:
+//   * CellDepResolver
+//   * HeaderDepResolver
+//   * CellCollector
+//   * TransactionDependencyProvider
+let mut ckb_client = CkbRpcClient::new(ckb_rpc);
+let cell_dep_resolver = {
+    let genesis_block = ckb_client.get_block_by_number(0.into()).unwrap().unwrap();
+    DefaultCellDepResolver::from_genesis(&BlockView::from(genesis_block)).unwrap()
+};
+let header_dep_resolver = DefaultHeaderDepResolver::new(ckb_rpc);
+let mut cell_collector = DefaultCellCollector::new(ckb_rpc);
+let tx_dep_provider = DefaultTransactionDependencyProvider::new(ckb_rpc, 10);
+
+// Build the transaction
+let output = CellOutput::new_builder()
+    .lock(Script::from(&receiver))
+    .capacity(capacity.0.pack())
+    .build();
+let builder = CapacityTransferBuilder::new(vec![(output, Bytes::default())]);
+let (_tx, _) = builder
+    .build_unlocked(
+        &mut cell_collector,
+        &cell_dep_resolver,
+        &header_dep_resolver,
+        &tx_dep_provider,
+        &balancer,
+        &unlockers,
+    )
+    .unwrap();
 ```
 
 ### Generate a new address
@@ -103,6 +180,12 @@ For more details please about CKB address refer to [CKB rfc 0021](https://github
 
 * [`transfer_from_sighash.rs`](examples/transfer_from_sighash.rs) Transfer capacity from a sighash address
 * [`transfer_from_multisig.rs`](examples/transfer_from_multisig.rs) Transfer capacity from a multisig address (main logic is less than 60 lines of code)
+
+You can try compiling them by running the following command in your terminal:
+
+```sh
+cargo build --examples
+```
 
 For more use cases of building transactions with CKB node, please refer to [these examples](./examples/) and [unit tests](./src/tests/).
 
