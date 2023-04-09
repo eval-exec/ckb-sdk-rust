@@ -1,7 +1,14 @@
 
 # CKB SDK Rust
 
-Rust SDK for Nervos [CKB][ckb].
+The Rust SDK for Nervos [CKB][ckb] provides several essential features for developers:
+
+- RPC access to CKB nodes
+- Data structure definitions for various concepts within CKB
+- Support for assembling transactions
+- Signature unlocking support for commonly used lock scripts.
+
+These features allow for seamless interaction with CKB and facilitate the development of decentralized applications on the CKB network.
 
 ## Install
 
