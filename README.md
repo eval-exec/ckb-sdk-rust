@@ -5,8 +5,8 @@ The Rust SDK for Nervos [CKB][ckb] provides several essential features for devel
 
 - RPC access to CKB nodes
 - Data structure definitions for various concepts within CKB
-- Support for assembling transactions
-- Signature unlocking support for commonly used lock scripts.
+- Support for assembling CKB transactions
+- Signature unlocking support for commonly used [lock scripts](https://github.com/nervosnetwork/rfcs/blob/master/rfcs/0022-transaction-structure/0022-transaction-structure.md#lock-script).
 
 These features allow for seamless interaction with CKB and facilitate the development of decentralized applications on the CKB network.
 
@@ -99,12 +99,12 @@ let _script: Script = addr.payload().into();
 For more details please about CKB address refer to [CKB rfc 0021](https://github.com/nervosnetwork/rfcs/blob/master/rfcs/0021-ckb-address-format/0021-ckb-address-format.md).
 
 
-## Examples
+## More Examples
 
 * [`transfer_from_sighash.rs`](examples/transfer_from_sighash.rs) Transfer capacity from a sighash address
 * [`transfer_from_multisig.rs`](examples/transfer_from_multisig.rs) Transfer capacity from a multisig address (main logic is less than 60 lines of code)
 
-For more use cases of building transactions with CKB node, please refer to [these examples](./examples/).
+For more use cases of building transactions with CKB node, please refer to [these examples](./examples/) and [unit tests](./src/tests/).
 
 ## License
 
